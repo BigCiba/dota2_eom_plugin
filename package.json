@@ -1,0 +1,86 @@
+{
+	"name": "lua-ability-editor-plugin",
+	"displayName": "lua-ability-editor-plugin",
+	"description": "Dota2 lua技能插件",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.39.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:extension.OpenLang",
+		"onCommand:extension.SkinTool"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.OpenLang",
+				"title": "转到文本"
+			},
+			{
+				"command": "extension.SkinTool",
+				"title": "皮肤生成工具",
+				"icon": {
+					"light": "./images/skin_tool_light.svg",
+					"dark": "./images/skin_tool_dark.svg"
+				}
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"when": "editorFocus",
+					"command": "extension.OpenLang",
+					"title": "转到文本",
+					"group": "navigation"
+				}
+			],
+			"editor/title": [{
+				"command": "extension.SkinTool",
+				"group": "navigation"
+			}]
+		},
+		"configuration": {
+			"type": "object",
+			"title": "Lua-Ability插件",
+			"properties": {
+				"LuaAbilityPlugin.addon_path": {
+					"type": "string",
+					"default": "C:/Users/lsj58/Documents/Dota Addon/ProjectDttD",
+					"description": "项目路径"
+				},
+				"LuaAbilityPlugin.items_schinese_url": {
+					"type": "string",
+					"default": "C:/Users/lsj58/Desktop/作图工具",
+					"description": "items_schinese.txt文件位置"
+				},
+				"LuaAbilityPlugin.items_english_url": {
+					"type": "string",
+					"default": "C:/Users/lsj58/Desktop/作图工具",
+					"description": "items_english.txt文件位置"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^5.2.6",
+		"@types/node": "^10.12.21",
+		"@types/vscode": "^1.39.0",
+		"glob": "^7.1.4",
+		"mocha": "^6.1.4",
+		"typescript": "^3.3.1",
+		"tslint": "^5.12.1",
+		"vscode-test": "^1.2.0"
+	}
+}
