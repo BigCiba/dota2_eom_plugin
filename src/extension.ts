@@ -29,6 +29,11 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(OpenLang);
 
 	let SkinTool = vscode.commands.registerCommand('extension.SkinTool', () => {
+		vscode.window.showInformationMessage("请问你现在的心情如何",'你说什么','我不知道','再见！')
+        .then(function(select){
+            console.log(select);
+		});
+		
 		const quickPick = vscode.window.createQuickPick();
 		quickPick.canSelectMany = false;
 		quickPick.ignoreFocusOut = true;
