@@ -21,20 +21,166 @@ function activate(context) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
-    let OpenLang = vscode.commands.registerCommand('extension.OpenLang', () => __awaiter(this, void 0, void 0, function* () {
+    let OpenLang = vscode.commands.registerCommand('extension.OpenLang', () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         // vscode.window.showInformationMessage('Hello World!');
         const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
         vscode.window.showTextDocument(vscode.Uri.file(path));
         // vscode.workspace.fs.copy(vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_tower.xlsx'),vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/自制工具及其源码/PythonOverride/npc_tower.xlsx'),{overwrite: true});
-    }));
+    });
     context.subscriptions.push(OpenLang);
+    // 初始化数据
+    // 遍历AttachWearables.txt获取每个英雄的每个套装
+    // let SetData = [{
+    // 	heroname: 'npc_dota_hero_abyssal_underlord',
+    // 	set_name: '',
+    // 	english_name: 'Raiments of the Obsidian Forge',
+    // 	chinese_name: '黑曜锻炉衣饰',
+    // 	skin_id: '',
+    // 	AttachWearables:[
+    // 		{
+    // 			ItemDef: 12293,
+    // 			item_slot:	'#DOTA_WearableType_head',
+    // 		},
+    // 		{
+    // 			ItemDef: 12294,
+    // 			item_slot:	'#DOTA_WearableType_armor',
+    // 		},
+    // 		{
+    // 			ItemDef: 12295,
+    // 			item_type_name:	'#DOTA_WearableType_weapon',
+    // 		}
+    // 	]
+    // }];
+    var SetData = new Array;
+    function FindWithHeroName(heroname) {
+        SetData.forEach(element => {
+            if (heroname === element.heroname) {
+                console.log(element.set_name);
+            }
+        });
+    }
+    function ReadAttachWearables(document) {
+        var setData = { heroname: '', set_name: '', english_name: '', chinese_name: '', skin_id: '', AttachWearables: new Array, };
+        var flagHero = false; // 是否进入一个英雄区块
+        var flagSets = false; // 是否进入一个套装区块
+        var leftBrackets = 0; // 记录{数量
+        var rightBrackets = 0; // 记录}数量
+        // 充值套装数据
+        function InitSetData() {
+            setData.set_name = '';
+            setData.english_name = '';
+            setData.chinese_name = '';
+            setData.skin_id = '';
+            setData.AttachWearables = new Array;
+        }
+        for (let line = 1; line < document.lineCount; line++) {
+            var lineText = document.lineAt(line).text;
+            // 查找到一个新英雄
+            if (lineText.search('Cosmetic Sets for ') !== -1 && flagHero === false) {
+                flagHero = true; // 进入一个英雄区块
+                setData.heroname = lineText.split('Cosmetic Sets for ')[1]; // 记录英雄名字
+                continue;
+            }
+            if (lineText.search('AttachWearables') !== -1 && flagHero === true && flagSets === false) {
+                flagSets = true; // 进入一个套装区块
+                InitSetData();
+                setData.set_name = lineText.split(' // ')[1]; // 记录套装名字
+                setData.skin_id += lineText;
+                continue;
+            }
+            if (flagSets === true) {
+                setData.skin_id = setData.skin_id + '\n' + lineText;
+                var leftBracketsArr = lineText.match('{');
+                if (leftBracketsArr !== null) {
+                    leftBrackets += leftBracketsArr.length;
+                }
+                var rightBracketsArr = lineText.match('}');
+                if (rightBracketsArr !== null) {
+                    rightBrackets += rightBracketsArr.length;
+                }
+                if (leftBrackets !== 0 && leftBrackets === rightBrackets) {
+                    flagSets = false; // 结束一个套装区块
+                    let data = {};
+                    Object.assign(data, setData);
+                    SetData.push({ data });
+                    continue;
+                }
+                if (lineText.search('ItemDef') !== -1) {
+                    var ItemDef = {
+                        ID: lineText.split('"')[1],
+                        ItemDef: lineText.split('"')[5],
+                        item_type_name: '',
+                    };
+                    setData.AttachWearables.push(ItemDef); // 记录套装数据
+                    continue;
+                }
+            }
+        }
+    }
+    function ReadEnglish(document) {
+        SetData.forEach(element => {
+            if (element.data.set_name === 'Default ' + element.data.heroname) {
+                element.data.english_name = 'Default ' + element.data.heroname;
+            }
+            else {
+                for (let line = 0; line < document.lineCount; line++) {
+                    var lineText = document.lineAt(line).text;
+                    if (lineText.search('DOTA_Item_' + element.data.set_name.replace(/ /g, '_')) !== -1) {
+                        element.data.english_name = lineText.split('"')[3];
+                        break;
+                    }
+                }
+            }
+        });
+    }
+    function ReadChinese(document) {
+        SetData.forEach(element => {
+            if (element.data.set_name === 'Default ' + element.data.heroname) {
+                element.data.chinese_name = '默认套装';
+            }
+            else {
+                for (let line = 0; line < document.lineCount; line++) {
+                    var lineText = document.lineAt(line).text;
+                    // console.log('DOTA_Item_' + element.data.set_name.replace(/ /g,'_'));
+                    if (lineText.search('DOTA_Item_' + element.data.set_name.replace(/ /g, '_')) !== -1) {
+                        element.data.chinese_name = lineText.split('"')[3];
+                        break;
+                    }
+                }
+            }
+        });
+        console.log(SetData[2]);
+        vscode.window.setStatusBarMessage('读取完毕');
+    }
+    const addon_path = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path');
+    vscode.workspace.openTextDocument(vscode.Uri.file(addon_path + '/game/dota_td/scripts/AttachWearables.txt')).then(function (document) {
+        vscode.window.setStatusBarMessage('读取套装..');
+        //ReadAttachWearables(document);
+    }).then(function () {
+        vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt')).then(function (document) {
+            vscode.window.setStatusBarMessage('读取英文..');
+            //ReadEnglish(document);
+        }).then(function () {
+            vscode.window.setStatusBarMessage('读取中文..');
+            vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_game.txt')).then(function (document) {
+                for (let line = 0; line < document.lineCount; line++) {
+                    var lineText = document.lineAt(line).text;
+                }
+                vscode.window.setStatusBarMessage('读取完毕');
+                //ReadChinese(document);
+            });
+        });
+    });
+    // const items_english_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt');
+    // const items_schinese_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt');
+    // const npc_heroes_tower_uri = vscode.Uri.file(addon_path + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv');
+    // vscode.workspace.openTextDocument(items_english_uri).then(async function(document){
+    // 	SetData.forEach(element => {
+    // 	});
+    // }
     let SkinTool = vscode.commands.registerCommand('extension.SkinTool', () => {
-        // vscode.window.showInformationMessage("请问你现在的心情如何",'你说什么','我不知道','再见！')
-        // .then(function(select){
-        //     console.log(select);
-        // });
         const quickPick = vscode.window.createQuickPick();
         quickPick.canSelectMany = false;
         quickPick.ignoreFocusOut = true;
@@ -49,12 +195,10 @@ function activate(context) {
         // 	{label: '复制套装英文名',}
         // ];
         const step_2_items = [
-            '复制英雄属性',
-            '复制套装ID',
-            '复制套装中文名',
-            '复制套装英文名',
-            '生成npc_heroes_tower_skin.kv',
-            '覆盖npc_heroes_tower_skin.kv',
+            '1.复制英雄属性',
+            '2.复制套装ID',
+            '3.生成npc_heroes_tower_skin.kv',
+            '4.覆盖npc_heroes_tower_skin.kv',
         ];
         quickPick.show();
         var NextStep = function () {
@@ -64,6 +208,7 @@ function activate(context) {
                     quickPick.value = '';
                     quickPick.placeholder = '英雄名字';
                     quickPick.title = '输入英雄名字';
+                    quickPick.items = [];
                 }
                 else if (quickPick.step === 2) {
                     quickPick.step += 1;
@@ -75,8 +220,6 @@ function activate(context) {
                         { label: step_2_items[1], },
                         { label: step_2_items[2], },
                         { label: step_2_items[3], },
-                        { label: step_2_items[4], },
-                        { label: step_2_items[5], }
                     ];
                 }
             });
@@ -97,7 +240,7 @@ function activate(context) {
             switch (quickPick.step) {
                 case 1:
                     var content = (yield document_english).getText();
-                    var matchArr = content.match(RegExp('\\"DOTA_Set_' + msg + '.*', 'ig'));
+                    var matchArr = content.match(RegExp('\\"DOTA_Set_.*' + msg + '.*', 'ig'));
                     // 在英文文本里搜寻词条并加入选择项
                     if (matchArr !== null) {
                         let pickItems = [];
@@ -211,6 +354,7 @@ function activate(context) {
                     break;
                 case 2:
                     var skinName = quickPick.value.replace('custom', 'skin_01');
+                    var name = '';
                     var modelName = '';
                     var modelScale = '1';
                     var OverrideUnitName = quickPick.value;
@@ -221,9 +365,12 @@ function activate(context) {
                         else {
                             for (let num = lineNumber + 1; num < (yield document_heroes).lineCount; num++) {
                                 var line = (yield document_heroes).lineAt(num);
-                                skinID = skinID + '\n' + line.text;
-                                var arr = line.text.match('Model');
-                                if (arr !== null) {
+                                var nameArr = line.text.match('Name');
+                                var modelArr = line.text.match('Model');
+                                if (nameArr !== null) {
+                                    name = line.text.split('"')[3];
+                                }
+                                if (modelArr !== null) {
                                     modelName = line.text.split('"')[3];
                                     break;
                                 }
@@ -231,31 +378,27 @@ function activate(context) {
                             break;
                         }
                     }
-                    heroData = skinName + '\n' + modelName + '\n' + modelScale + '\n' + OverrideUnitName;
+                    heroData = skinName + '\t' + modelName + '\t' + modelScale + '\t\t\t\t' + OverrideUnitName + '\t' + name + '\t\t\t' + skinNameSchinese + '\t' + skinNameEnglish;
                     NextStep();
                     break;
                 case 3:
                     if (quickPick.value === step_2_items[0]) {
+                        // 打开npc_heroes_tower_skin目录
+                        vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(addon_path + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx'));
                         vscode.env.clipboard.writeText(heroData);
                     }
                     else if (quickPick.value === step_2_items[1]) {
-                        vscode.env.clipboard.writeText(skinNameSchinese);
+                        vscode.env.clipboard.writeText(skinID);
                     }
                     else if (quickPick.value === step_2_items[2]) {
-                        vscode.env.clipboard.writeText(skinNameSchinese);
-                    }
-                    else if (quickPick.value === step_2_items[3]) {
-                        vscode.env.clipboard.writeText(skinNameEnglish);
-                    }
-                    else if (quickPick.value === step_2_items[4]) {
                         // 复制文件并打开kv
-                        vscode.workspace.fs.copy(npc_heroes_tower_uri, vscode.Uri.file(addon_path + '/design//自制工具及其源码/PythonOverride/npc_heroes_tower.kv'), { overwrite: true });
-                        vscode.workspace.fs.copy(vscode.Uri.file(addon_path + 'design/4.kv配置表/npc_heroes_tower_skin.xlsx'), vscode.Uri.file(addon_path + '/design//自制工具及其源码/PythonOverride/npc_heroes_tower_skin.xlsx'), { overwrite: true });
+                        vscode.workspace.fs.copy(npc_heroes_tower_uri, vscode.Uri.file(addon_path + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower.kv'), { overwrite: true });
+                        vscode.workspace.fs.copy(vscode.Uri.file(addon_path + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx'), vscode.Uri.file(addon_path + '/design//自制工具及其源码/PythonOverride/npc_heroes_tower_skin.xlsx'), { overwrite: true });
                         vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(addon_path + '/design/自制工具及其源码/PythonOverride/kv.exe'));
                     }
-                    else if (quickPick.value === step_2_items[5]) {
+                    else if (quickPick.value === step_2_items[3]) {
                         // 覆盖kv
-                        vscode.workspace.fs.copy(vscode.Uri.file(addon_path + '/design//自制工具及其源码/PythonOverride/npc_heroes_tower_skin.kv'), vscode.Uri.file(addon_path + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv'), { overwrite: true });
+                        vscode.workspace.fs.copy(vscode.Uri.file(addon_path + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower_skin.kv'), vscode.Uri.file(addon_path + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv'), { overwrite: true });
                         quickPick.hide();
                     }
                     break;
@@ -263,36 +406,6 @@ function activate(context) {
                     break;
             }
         }));
-        // quickPick.onDidAccept(async()=>{
-        // 	var msg = quickPick.value;
-        // 	var skinNameSchinese = '';
-        // 	var skinNameEnglish = '';
-        // 	// 选取中文词条
-        // 	const items_schinese_uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt';
-        // 	vscode.workspace.openTextDocument(vscode.Uri.file(items_schinese_uri)).then(async function(document){
-        // 		// vscode.window.showTextDocument(document);
-        // 		var content = document.getText();
-        // 		var Reg = '\\"DOTA_Set_' + msg + '.*';
-        // 		var matchArr = content.match(Reg);
-        // 		if (matchArr !== null) {
-        // 			skinNameSchinese = matchArr[0].split('"')[3];
-        // 			for (let lineNumber = 1; lineNumber < document.lineCount; lineNumber++) {
-        // 				var textLine = document.lineAt(lineNumber);
-        // 				if (textLine.text.search(matchArr[0].split('"')[1]) === -1 ) {
-        // 				} else {
-        // 					console.log(lineNumber);
-        // 					var options = {
-        // 						selection: new vscode.Range(new vscode.Position(lineNumber, matchArr[0].indexOf(skinNameSchinese)+2),new vscode.Position(lineNumber, matchArr[0].length+1)),
-        // 						preview: false,
-        // 					};
-        // 					// 选择文件并选择所需文字
-        // 					vscode.window.showTextDocument(vscode.Uri.file(items_schinese_uri), options);
-        // 				}
-        // 			}
-        // 		}
-        // 	});
-        // 	// vscode.window.showTextDocument(document);
-        // });
     });
     context.subscriptions.push(SkinTool);
 }
