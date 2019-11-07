@@ -31,8 +31,82 @@ function activate(context) {
         // 	  console.log(obj[1]);
         // 	}
         //   });
-        const sheetList = node_xlsx_1.default.parse('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_heroes_tower_skin.xlsx');
-        console.log(sheetList);
+        // const sheetList = xlsx.parse('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_heroes_tower_skin.xlsx');
+        // console.log(sheetList);
+        vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_game.txt')).then((document) => function () {
+            for (let line = 0; line < document.lineCount; line++) {
+                var start = false;
+                var end = false;
+                var flagSets = false; // 是否进入一个套装区块
+                var skipSets = false; // 跳过一个套装区块
+                var wearable = false; // 是否可装备
+                var itemsArr = new Array;
+                var setData = { id: '', item_type_name: '', item_slot: '' };
+                for (let line = 0; line < document.lineCount; line++) {
+                    let lineText = document.lineAt(line).text;
+                    // console.log('DOTA_Item_' + element.data.set_name.replace(/ /g,'_'));
+                    // 进入物品区块
+                    if (lineText.search('"items"') !== -1 && start === false) {
+                        start = true;
+                        continue;
+                    }
+                    // 寻找到套装ID
+                    if (start === true && lineText.split('"').length === 3 && lineText.search(/[1-9][0-9]*/) === 3) {
+                        if (flagSets === true) {
+                            if (skipSets === false) {
+                                let data = {};
+                                Object.assign(data, setData);
+                                itemsArr.push(data);
+                            }
+                            setData.id = lineText.split('"')[1];
+                            setData.item_type_name = '';
+                        }
+                        else {
+                            flagSets = true;
+                            setData.id = lineText.split('"')[1];
+                        }
+                    }
+                    // 寻找到套装ID下的信息判断是否是装备
+                    if (flagSets === true && lineText.split('"')[1] === 'prefab') {
+                        if (lineText.split('"')[3] === 'wearable' || lineText.split('"')[3] === 'default_item') {
+                            wearable = true;
+                            skipSets = false;
+                        }
+                        else {
+                            wearable = false;
+                            skipSets = true;
+                        }
+                    }
+                    // 寻找到套装ID下的装备信息
+                    if (flagSets === true && skipSets === false && wearable === true && lineText.search('"item_type_name"') !== -1) {
+                        setData.item_type_name = lineText.split('"')[3];
+                    }
+                    // 寻找到套装ID下的装备信息
+                    if (flagSets === true && skipSets === false && wearable === true && lineText.search('"item_slot"') !== -1) {
+                        setData.item_slot = lineText.split('"')[3];
+                    }
+                    // 结束物品区块
+                    if (lineText.search('"item_sets"') !== -1 && end === false) {
+                        end = true;
+                        break;
+                    }
+                }
+                SetData.forEach(element => {
+                    for (let i = 0; i < element.data.AttachWearables.length; i++) {
+                        const itemData = element.data.AttachWearables[i];
+                        for (let index = 0; index < itemsArr.length; index++) {
+                            const obj = itemsArr[index];
+                            if (obj.id === itemData.ItemDef) {
+                                itemData.item_type_name = obj.item_type_name;
+                                itemData.item_slot = obj.item_slot;
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+            console.log('结束');
+        });
     });
     context.subscriptions.push(OpenLang);
     // 初始化数据
@@ -82,7 +156,6 @@ function activate(context) {
                 }
             }
         }
-        console.log(skin_id);
         return skin_id;
     }
     function FindSetDataWithEnglishName(english_name) {
@@ -201,11 +274,11 @@ function activate(context) {
         }).then(function () {
             vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt')).then(function (document) {
                 vscode.window.setStatusBarMessage('读取英文..');
-                ReadEnglish(document);
+                // ReadEnglish(document);
             }).then(function () {
                 vscode.window.setStatusBarMessage('读取中文..');
                 vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt')).then(function (document) {
-                    ReadChinese(document);
+                    // ReadChinese(document);
                 }).then(function () {
                     vscode.window.setStatusBarMessage('读取装备类型..');
                     vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_game.txt')).then(function (document) {
@@ -266,6 +339,8 @@ function activate(context) {
                             ID: lineText.split('"')[1],
                             ItemDef: lineText.split('"')[5],
                             item_type_name: '',
+                            item_slot: '',
+                            item_desc: lineText.split(' // ')[1],
                         };
                         setData.AttachWearables.push(ItemDef); // 记录套装数据
                         continue;
@@ -310,19 +385,15 @@ function activate(context) {
             });
         }
         function ReadSoltType(document) {
-            // items
-            // item_sets
-            // attributes
-            // attribute_controlled_attached_particles
             var start = false;
             var end = false;
             var flagSets = false; // 是否进入一个套装区块
             var skipSets = false; // 跳过一个套装区块
             var wearable = false; // 是否可装备
             var itemsArr = new Array;
-            var setData = { id: '', item_type_name: '' };
+            var setData = { id: '', item_type_name: '', item_slot: '' };
             for (let line = 0; line < document.lineCount; line++) {
-                var lineText = document.lineAt(line).text;
+                let lineText = document.lineAt(line).text;
                 // console.log('DOTA_Item_' + element.data.set_name.replace(/ /g,'_'));
                 // 进入物品区块
                 if (lineText.search('"items"') !== -1 && start === false) {
@@ -360,6 +431,10 @@ function activate(context) {
                 if (flagSets === true && skipSets === false && wearable === true && lineText.search('"item_type_name"') !== -1) {
                     setData.item_type_name = lineText.split('"')[3];
                 }
+                // 寻找到套装ID下的装备信息
+                if (flagSets === true && skipSets === false && wearable === true && lineText.search('"item_slot"') !== -1) {
+                    setData.item_slot = lineText.split('"')[3];
+                }
                 // 结束物品区块
                 if (lineText.search('"item_sets"') !== -1 && end === false) {
                     end = true;
@@ -373,6 +448,7 @@ function activate(context) {
                         const obj = itemsArr[index];
                         if (obj.id === itemData.ItemDef) {
                             itemData.item_type_name = obj.item_type_name;
+                            itemData.item_slot = obj.item_slot;
                             break;
                         }
                     }
@@ -444,6 +520,7 @@ function activate(context) {
                 // console.log(exceldata);
                 var buffer = node_xlsx_1.default.build([{ name: "Sheet1", data: exceldata }]);
                 // fs.writeFileSync(xlsxName,buffer);
+                quickPick.hide();
             });
             // // 监听确定事件
             // quickPick.onDidAccept(()=>{
