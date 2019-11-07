@@ -10,8 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.OpenLang",
-		"onCommand:extension.SkinTool"
+		"*"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -38,10 +37,12 @@
 					"group": "navigation"
 				}
 			],
-			"editor/title": [{
-				"command": "extension.SkinTool",
-				"group": "navigation"
-			}]
+			"editor/title": [
+				{
+					"command": "extension.SkinTool",
+					"group": "navigation"
+				}
+			]
 		},
 		"configuration": {
 			"type": "object",
@@ -82,5 +83,8 @@
 		"typescript": "^3.3.1",
 		"tslint": "^5.12.1",
 		"vscode-test": "^1.2.0"
+	},
+	"dependencies": {
+		"@types/node-xlsx": "^0.12.1"
 	}
 }
