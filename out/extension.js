@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const fs_1 = require("fs");
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -25,9 +26,20 @@ function activate(context) {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         // vscode.window.showInformationMessage('Hello World!');
-        const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
-        vscode.window.showTextDocument(vscode.Uri.file(path));
+        // const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
+        // vscode.window.showTextDocument(vscode.Uri.file(path));
         // vscode.workspace.fs.copy(vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_tower.xlsx'),vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/自制工具及其源码/PythonOverride/npc_tower.xlsx'),{overwrite: true});
+        // var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+        // fsync:readFile(uri, 'utf-8', (err, data) => {
+        // 	if (err) {
+        // 	  console.log(err);
+        // 	} else {
+        // 		var obj = JSON.parse(data);
+        // 	  console.log(obj[0]);
+        // 	  console.log(obj[1]);
+        // 	}
+        //   });
+        IsHasJson();
     });
     context.subscriptions.push(OpenLang);
     // 初始化数据
@@ -53,6 +65,8 @@ function activate(context) {
     // 		}
     // 	]
     // }];
+    if (IsHasJson() === false) {
+    }
     var SetData = new Array;
     function FindWithHeroName(heroname) {
         SetData.forEach(element => {
@@ -151,25 +165,38 @@ function activate(context) {
                 }
             }
         });
-        console.log(SetData[2]);
-        vscode.window.setStatusBarMessage('读取完毕');
+    }
+    function greet() {
+        return "Hello World";
+    }
+    function IsHasJson() {
+        var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+        fsync: fs_1.readFile(uri, function (err, data) {
+            if (err) {
+                return false;
+            }
+            return true;
+        });
+        return await();
+    }
+    function WriteJson() {
+        var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+        fsync: fs_1.writeFile(uri, JSON.stringify(SetData), function () { });
     }
     const addon_path = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path');
     vscode.workspace.openTextDocument(vscode.Uri.file(addon_path + '/game/dota_td/scripts/AttachWearables.txt')).then(function (document) {
         vscode.window.setStatusBarMessage('读取套装..');
-        //ReadAttachWearables(document);
+        ReadAttachWearables(document);
     }).then(function () {
         vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt')).then(function (document) {
             vscode.window.setStatusBarMessage('读取英文..');
-            //ReadEnglish(document);
+            // ReadEnglish(document);
         }).then(function () {
             vscode.window.setStatusBarMessage('读取中文..');
-            vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_game.txt')).then(function (document) {
-                for (let line = 0; line < document.lineCount; line++) {
-                    var lineText = document.lineAt(line).text;
-                }
+            vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt')).then(function (document) {
+                // ReadChinese(document);
+                // WriteJson();
                 vscode.window.setStatusBarMessage('读取完毕');
-                //ReadChinese(document);
             });
         });
     });

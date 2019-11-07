@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import { start } from 'repl';
 import { type } from 'os';
-import { fsync } from 'fs';
+import { fsync, writeFile, readFile, fsyncSync } from 'fs';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -21,10 +21,21 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Display a message box to the user
 		// vscode.window.showInformationMessage('Hello World!');
-		const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
-		vscode.window.showTextDocument(vscode.Uri.file(path));
+		// const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
+		// vscode.window.showTextDocument(vscode.Uri.file(path));
 		// vscode.workspace.fs.copy(vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_tower.xlsx'),vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/自制工具及其源码/PythonOverride/npc_tower.xlsx'),{overwrite: true});
-
+		
+		// var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+		// fsync:readFile(uri, 'utf-8', (err, data) => {
+		// 	if (err) {
+		// 	  console.log(err);
+		// 	} else {
+		// 		var obj = JSON.parse(data);
+		// 	  console.log(obj[0]);
+		// 	  console.log(obj[1]);
+		// 	}
+		//   });
+		IsHasJson();
 
 	});
 
@@ -53,6 +64,9 @@ export function activate(context: vscode.ExtensionContext) {
 	// 		}
 	// 	]
 	// }];
+	if (IsHasJson() === false) {
+		
+	}
 	var SetData = new Array;
 	function FindWithHeroName(heroname:string) {
 		SetData.forEach(element => {
@@ -150,25 +164,38 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			}
 		});
-		console.log(SetData[2]);
-		vscode.window.setStatusBarMessage('读取完毕');
+	}
+	function greet():string { // 返回一个字符串
+		return "Hello World";
+	} 
+	function IsHasJson() {
+		var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+		fsync:readFile(uri, function (err, data) {
+			if (err) {
+				return false;
+			}
+			return true;
+		 });
+		 return await()
+	}
+	function WriteJson() {
+		var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+		fsync:writeFile(uri, JSON.stringify(SetData), function(){});
 	}
 	const addon_path = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path');
 	vscode.workspace.openTextDocument(vscode.Uri.file(addon_path + '/game/dota_td/scripts/AttachWearables.txt')).then(function(document){
 		vscode.window.setStatusBarMessage('读取套装..');
-		//ReadAttachWearables(document);
+		ReadAttachWearables(document);
 	}).then(function(){
 		vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt')).then(function(document){
 			vscode.window.setStatusBarMessage('读取英文..');
-			//ReadEnglish(document);
+			// ReadEnglish(document);
 		}).then(function(){
 			vscode.window.setStatusBarMessage('读取中文..');
-			vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_game.txt')).then(function(document){
-				for (let line = 0; line < document.lineCount; line++) {
-					var lineText = document.lineAt(line).text;
-				}
+			vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt')).then(function(document){
+				// ReadChinese(document);
+				// WriteJson();
 				vscode.window.setStatusBarMessage('读取完毕');
-				//ReadChinese(document);
 			});
 		});
 	});
