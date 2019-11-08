@@ -82,5 +82,9 @@
 	},
 	"dependencies": {
 		"@types/node-xlsx": "^0.12.1"
-	}
+	},
+	"repository": {
+        "type": "git",
+        "url": "https://github.com/BigCiba/dota2_eom_plugin.git"
+    }
 }
