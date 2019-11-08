@@ -4,6 +4,7 @@
 	"description": "Dota2月之底插件",
 	"version": "1.0.0",
 	"publisher": "bigciba",
+	"icon": "images/logo.png",
 	"engines": {
 		"vscode": "^1.39.0"
 	},
@@ -84,7 +85,12 @@
 		"@types/node-xlsx": "^0.12.1"
 	},
 	"repository": {
-        "type": "git",
-        "url": "https://github.com/BigCiba/dota2_eom_plugin.git"
-    }
+		"type": "git",
+		"url": "https://github.com/BigCiba/dota2_eom_plugin.git"
+	},
+	"__metadata": {
+		"id": "3eeea710-d2cf-419c-8cd3-b4b827a22123",
+		"publisherDisplayName": "糍粑",
+		"publisherId": "d070d93a-9c7f-41ea-b7b2-5a23851a5ec6"
+	}
 }
