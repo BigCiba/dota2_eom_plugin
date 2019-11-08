@@ -1,6 +1,6 @@
-# lua-ability-editor-plugin README
+# dota2_eom_plugin README
 
-This is the README for your extension "lua-ability-editor-plugin". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "dota2_eom_plugin". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

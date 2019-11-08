@@ -13,21 +13,21 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "lua-ability-editor-plugin" is now active!');
+	console.log('Congratulations, your extension "dota2_eom_plugin" is now active!');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let OpenLang = vscode.commands.registerCommand('extension.OpenLang', () => {
+	let OpenLang = vscode.commands.registerCommand('extension.OpenLang', async () => {
 		// The code you place here will be executed every time your command is executed
 
 		// Display a message box to the user
 		// vscode.window.showInformationMessage('Hello World!');
-		// const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
-		// vscode.window.showTextDocument(vscode.Uri.file(path));
+		const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
+		vscode.window.showTextDocument(vscode.Uri.file(path));
 		// vscode.workspace.fs.copy(vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_tower.xlsx'),vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/自制工具及其源码/PythonOverride/npc_tower.xlsx'),{overwrite: true});
 		
-		// var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+		// var uri = vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_info.json';
 		// fsync:readFile(uri, 'utf-8', (err, data) => {
 		// 	if (err) {
 		// 	  console.log(err);
@@ -39,78 +39,14 @@ export function activate(context: vscode.ExtensionContext) {
 		//   });
 		// const sheetList = xlsx.parse('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_heroes_tower_skin.xlsx');
 		// console.log(sheetList);
-		vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_game.txt')).then((document)=>function () {
-			for (let line = 0; line < document.lineCount; line++) {
-				var start:boolean = false;
-				var end:boolean = false;
-				var flagSets:boolean = false;	// 是否进入一个套装区块
-				var skipSets:boolean = false;	// 跳过一个套装区块
-				var wearable:boolean = false;	// 是否可装备
-				var itemsArr = new Array;
-				var setData = {id: '',item_type_name:'',item_slot:''};
-				for (let line = 0; line < document.lineCount; line++) {
-					let lineText = document.lineAt(line).text;
-					// console.log('DOTA_Item_' + element.data.set_name.replace(/ /g,'_'));
-					// 进入物品区块
-					if (lineText.search('"items"') !== -1 && start === false) {
-						start = true;
-						continue;
-					}
-					// 寻找到套装ID
-					if (start === true && lineText.split('"').length === 3 && lineText.search(/[1-9][0-9]*/) === 3) {
-						if (flagSets === true ) {
-							if (skipSets === false) {
-								let data = {};
-								Object.assign(data, setData);
-								itemsArr.push(data);
-							}
-							setData.id = lineText.split('"')[1];
-							setData.item_type_name = '';
-						} else {
-							flagSets = true;
-							setData.id = lineText.split('"')[1];
-						}
-					}
-					// 寻找到套装ID下的信息判断是否是装备
-					if (flagSets === true && lineText.split('"')[1] === 'prefab') {
-						if (lineText.split('"')[3] === 'wearable' || lineText.split('"')[3] === 'default_item') {
-							wearable = true;
-							skipSets = false;
-						} else {
-							wearable = false;
-							skipSets = true;
-						}
-					}
-					// 寻找到套装ID下的装备信息
-					if (flagSets === true && skipSets === false && wearable === true && lineText.search('"item_type_name"') !== -1) {
-						setData.item_type_name = lineText.split('"')[3];
-					}
-					// 寻找到套装ID下的装备信息
-					if (flagSets === true && skipSets === false && wearable === true && lineText.search('"item_slot"') !== -1) {
-						setData.item_slot = lineText.split('"')[3];
-					}
-					// 结束物品区块
-					if (lineText.search('"item_sets"') !== -1 && end === false) {
-						end = true;
-						break;
-					}
-				}
-				SetData.forEach(element => {
-					for (let i = 0; i < element.data.AttachWearables.length; i++) {
-						const itemData = element.data.AttachWearables[i];
-						for (let index = 0; index < itemsArr.length; index++) {
-							const obj = itemsArr[index];
-							if (obj.id === itemData.ItemDef) {
-								itemData.item_type_name = obj.item_type_name;
-								itemData.item_slot = obj.item_slot;
-								break;
-							}
-						}
-					}
-				});
-			}
-			console.log('结束');
-		});
+		
+		
+		// console.log('结束');
+		// var document = vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_game.txt'));
+		// for (let line = 20000; line < 20020; line++) {
+		// 	var text = (await document).getText(new vscode.Range(new vscode.Position(line,0),new vscode.Position(line,100)));
+		// 	console.log(text);
+		// }
 	});
 
 	context.subscriptions.push(OpenLang);
@@ -150,23 +86,36 @@ export function activate(context: vscode.ExtensionContext) {
 	function FindWithHeroName(heroname:string) {
 		SetData.forEach(element => {
 			if (heroname === element.data.heroname) {
-				console.log(element.data);
 			}
 		});
 	}
-	function GetSkinId(setData:any,defaultData:any):any {
-		var skin_id = defaultData.skin_id + '123124';
-		for (let i = 0; i < setData.AttachWearables.length; i++) {
-			const element = setData.AttachWearables[i];
-			for (let j = 0; j < defaultData.AttachWearables.length; j++) {
-				const defaultElement = defaultData.AttachWearables[j];
-				if (element.item_type_name === defaultElement.item_type_name) {
-					skin_id.replace(String(defaultElement.ItemDef), String(element.ItemDef));
-				}
-			}
+	function GetLineText(text:string,lineCount:number,line:number) {
+		var lineCountArr = text.match(/\n/g);
+		var lineCount = 0;
+		if (lineCountArr !== null) {
+			lineCount = lineCountArr.length;
 			
 		}
-		return skin_id;
+
+	}
+	function GetSkinId(setData:any,defaultData:any):any {
+		var Creature = '"AttachWearables" // ' + setData.chinese_name + '\n{\n\t';
+		for (let i = 0; i < defaultData.AttachWearables.length; i++) {
+			const defaultElement = defaultData.AttachWearables[i];
+			var ItemDef = defaultElement.ItemDef;
+			var item_desc = defaultElement.item_desc;
+			for (let j = 0; j < setData.AttachWearables.length; j++) {
+				const element = setData.AttachWearables[j];
+				if (element.item_type_name === defaultElement.item_type_name && element.item_slot === defaultElement.item_slot) {
+					ItemDef = element.ItemDef;
+					item_desc = element.item_desc;
+				}
+			}
+			var lineText = new String('"' + defaultElement.ID + '" { "ItemDef" "' + ItemDef + '" } // ' + item_desc + '\n\t');
+			Creature += lineText;
+		}
+		Creature += '}';
+		return Creature;
 	}
 	function FindSetDataWithEnglishName(english_name:string):any {
 		for (let i = 0; i < SetData.length; i++) {
@@ -193,19 +142,20 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}
 	function SkinToolInit() {
-		var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
-		fs.readFile(uri, 'utf-8', function (err, data) {
-			if (err) {
-				InitJson();
-			}
-			SetData = JSON.parse(data);
-			ReadHeroData();
-			// FindWithHeroName('npc_dota_hero_lone_druid')；
-		 });
+		if (vscode.workspace.getConfiguration().has('Dota2EomPlugin.text_url') && vscode.workspace.getConfiguration().has('Dota2EomPlugin.addon_path')) {
+			var uri = vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_info.json';
+			fs.readFile(uri, 'utf-8', function (err, data) {
+				if (err) {
+					InitJson();
+				}
+				SetData = JSON.parse(data);
+				ReadHeroData();
+			 });
+		}
 	}
 	function ReadHeroData() {
-		const npc_heroes_tower_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv');
-		const npc_heroes_tower_skin_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv');
+		const npc_heroes_tower_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv');
+		const npc_heroes_tower_skin_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv');
 		// 预载入每个英雄的数据与skin
 		
 		vscode.workspace.openTextDocument(npc_heroes_tower_uri).then(function (document) {
@@ -268,32 +218,30 @@ export function activate(context: vscode.ExtensionContext) {
 							const element = HeroData[i];
 							if (element.data.heroname === heroname) {
 								element.data.skins.push(skinName);
-								// console.log(element);
 								break;
 							}
 						}
 					}
 				}
-				console.log(HeroData[0]);
 			});
 		});
 	}
 	function InitJson() {
-		const addon_path = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path');
+		const addon_path = vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path');
 		vscode.workspace.openTextDocument(vscode.Uri.file(addon_path + '/game/dota_td/scripts/AttachWearables.txt')).then(function(document){
 			vscode.window.setStatusBarMessage('读取套装..');
 			ReadAttachWearables(document);
 		}).then(function(){
-			vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt')).then(function(document){
+			vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_english.txt')).then(function(document){
 				vscode.window.setStatusBarMessage('读取英文..');
-				// ReadEnglish(document);
+				ReadEnglish(document);
 			}).then(function(){
 				vscode.window.setStatusBarMessage('读取中文..');
-				vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt')).then(function(document){
-					// ReadChinese(document);
+				vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_schinese.txt')).then(function(document){
+					ReadChinese(document);
 				}).then(function(){
 					vscode.window.setStatusBarMessage('读取装备类型..');
-					vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_game.txt')).then(function(document){
+					vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_game.txt')).then(function(document){
 						ReadSoltType(document);
 						WriteJson();
 						vscode.window.setStatusBarMessage('读取完毕');
@@ -303,7 +251,7 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 		});
 		function ReadAttachWearables(document: vscode.TextDocument) {
-			var setData = {heroname: '',set_name: '',localize_name: '',english_name: '',chinese_name: '',skin_id: '',AttachWearables: new Array,};
+			var setData = {heroname: '',set_name: '',localize_name: '',english_name: '',chinese_name: '',AttachWearables: new Array,};
 			var flagSets:boolean = false;	// 是否进入一个套装区块
 			var leftBrackets:number = 0;	// 记录{数量
 			var rightBrackets:number = 0;	// 记录}数量
@@ -312,7 +260,7 @@ export function activate(context: vscode.ExtensionContext) {
 				setData.set_name = '';
 				setData.english_name = '';
 				setData.chinese_name = '';
-				setData.skin_id = '';
+				// setData.skin_id = '';
 				setData.AttachWearables = new Array;
 			}
 			for (let line = 1; line < document.lineCount; line++) {
@@ -326,11 +274,11 @@ export function activate(context: vscode.ExtensionContext) {
 					flagSets = true;	// 进入一个套装区块
 					InitSetData();
 					setData.set_name = lineText.split(' // ')[1];	// 记录套装名字
-					setData.skin_id += lineText;
+					// setData.skin_id += lineText;
 					continue;
 				}
 				if (flagSets === true) {
-					setData.skin_id = setData.skin_id + '\n' + lineText;
+					// setData.skin_id = setData.skin_id + '\n' + lineText;
 	
 					var leftBracketsArr = lineText.match('{');
 					if (leftBracketsArr !== null) {
@@ -368,7 +316,6 @@ export function activate(context: vscode.ExtensionContext) {
 				} else {
 					for (let line = 0; line < document.lineCount; line++) {
 						var lineText = document.lineAt(line).text;
-						// if (lineText.search('DOTA_Item_' + element.data.set_name.replace(/ /g,'_').replace(/'/g,'').replace(/-/g,'')) !== -1) {
 						if (lineText.split('"')[3] === element.data.set_name) {
 							element.data.english_name = lineText.split('"')[3];
 							element.data.localize_name = lineText.split('"')[1];
@@ -385,8 +332,6 @@ export function activate(context: vscode.ExtensionContext) {
 				} else {
 					for (let line = 0; line < document.lineCount; line++) {
 						var lineText = document.lineAt(line).text;
-						// console.log('DOTA_Item_' + element.data.set_name.replace(/ /g,'_'));
-						// if (lineText.search('DOTA_Item_' + element.data.set_name.replace(/ /g,'_').replace(/'/g,'').replace(/-/g,'')) !== -1) {
 						if (lineText.search(element.data.localize_name) !== -1) {
 							element.data.chinese_name = lineText.split('"')[3];
 							break;
@@ -404,8 +349,8 @@ export function activate(context: vscode.ExtensionContext) {
 			var itemsArr = new Array;
 			var setData = {id: '',item_type_name:'',item_slot:''};
 			for (let line = 0; line < document.lineCount; line++) {
-				let lineText = document.lineAt(line).text;
-				// console.log('DOTA_Item_' + element.data.set_name.replace(/ /g,'_'));
+				var lineText = document.getText(new vscode.Range(new vscode.Position(line,0),new vscode.Position(line,100)));
+				// let lineText = document.lineAt(line).text;
 				// 进入物品区块
 				if (lineText.search('"items"') !== -1 && start === false) {
 					start = true;
@@ -421,6 +366,7 @@ export function activate(context: vscode.ExtensionContext) {
 						}
 						setData.id = lineText.split('"')[1];
 						setData.item_type_name = '';
+						setData.item_slot = '';
 					} else {
 						flagSets = true;
 						setData.id = lineText.split('"')[1];
@@ -465,15 +411,15 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 		}
 		function WriteJson() {
-			var uri = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_info.json';
+			var uri = vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_info.json';
 			fs.writeFile(uri, JSON.stringify(SetData), function(){});
 		}
 	}
 	
 
 
-	// const items_english_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt');
-	// const items_schinese_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt');
+	// const items_english_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_english.txt');
+	// const items_schinese_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_schinese.txt');
 	// const npc_heroes_tower_uri = vscode.Uri.file(addon_path + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv');
 	// vscode.workspace.openTextDocument(items_english_uri).then(async function(document){
 	// 	SetData.forEach(element => {
@@ -510,20 +456,15 @@ export function activate(context: vscode.ExtensionContext) {
 			// 选择选项
 			quickPick.onDidChangeSelection((t)=>{
 				quickPick.value = t[0].label;
-				// console.log(t[0]);
 				// 打开excel
-				var xlsxName =vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path') + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx';
+				var xlsxName =vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx';
 				var sheetList = xlsx.parse(xlsxName);
 				var exceldata = sheetList[0].data;
-				// console.log(exceldata);
 				// 修改excel
 				const setData = FindSetDataWithEnglishName(t[0].label);
 				const heroData = FindHeroDataWithHeroName(setData.heroname + '_custom');
 				const defaultSetData = FindHeroDefaultSet(setData.heroname);
-				console.log(setData);
-				console.log(defaultSetData);
-				// console.log(heroData);
-				const SkinName = heroData.heroname + '_skin_' + '0' + String(heroData.skins.length + 1);
+				const SkinName = setData.heroname + '_skin_' + '0' + String(heroData.skins.length + 1);
 				const Model = heroData.Model;
 				const ModelScale = heroData.ModelScale;
 				const Skin = null;
@@ -531,21 +472,45 @@ export function activate(context: vscode.ExtensionContext) {
 				const ProjectileModel = null;
 				const OverrideUnitName = setData.heroname + '_custom';
 				const Name = heroData.Name;
-				// const Creature = setData.skin_id;
 				const Creature = GetSkinId(setData, defaultSetData);
 				const SetName = setData.chinese_name;
 				var newData:any = [SkinName,Model,ModelScale,Skin,HealthBarOffset,ProjectileModel,OverrideUnitName,Name,Creature,null,SetName];
 				exceldata.push(newData);
-				// console.log(exceldata);
 				var buffer = xlsx.build([{name: "Sheet1", data: exceldata}]);
-				// fs.writeFileSync(xlsxName,buffer);
+				fs.writeFileSync(xlsxName,buffer);
+
+				vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower.kv'),{overwrite: true});
+				vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design//自制工具及其源码/PythonOverride/npc_heroes_tower_skin.xlsx'),{overwrite: true});
+				vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/kv.exe'));
 				quickPick.hide();
+				// 覆盖kv
+				vscode.window.showInformationMessage('Hello World!','覆盖').then((msg)=>{
+					vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower_skin.kv'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv'),{overwrite: true});
+					vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv')).then(async function(document){
+						var avatarStarLine = 0;
+						var avatarEndLine = 0;
+						for (let line = 0; line < document.lineCount; line++) {
+							var lineText = document.lineAt(line).text;
+							if (lineText.search(setData.heroname + '_skin_' + '0' + heroData.skins.length) !== -1) {
+								avatarEndLine = line + 1;
+								break;
+							}
+							if (lineText.search('avatar') !== -1 && avatarStarLine === 0) {
+								avatarStarLine = line;
+								continue;
+							}
+							if (lineText.search('avatar') === -1 && avatarStarLine !== 0) {
+								avatarEndLine = line;
+								break;
+							}
+						}
+						var textEditor = vscode.window.showTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv'));
+						(await textEditor).edit(function (editBuilder) {
+							editBuilder.insert(new vscode.Position(avatarEndLine,0), SkinName + ',avatar,' + SetName + ',,,1,TRUE,,,\n');
+						});
+					});
+				});
 			});
-
-			// // 监听确定事件
-			// quickPick.onDidAccept(()=>{
-
-			// });
 		}
 		/*const quickPick = vscode.window.createQuickPick();
 		quickPick.canSelectMany = false;
@@ -589,9 +554,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 		};
 
-		const items_english_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_english_url') + '/items_english.txt');
-		const items_schinese_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('LuaAbilityPlugin.items_schinese_url') + '/items_schinese.txt');
-		const addon_path = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path') ;
+		const items_english_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_english.txt');
+		const items_schinese_uri = vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_schinese.txt');
+		const addon_path = vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') ;
 		const npc_heroes_tower_uri = vscode.Uri.file(addon_path + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv');
 		const document_english = vscode.workspace.openTextDocument(items_english_uri);
 		const document_schinese = vscode.workspace.openTextDocument(items_schinese_uri);
@@ -662,7 +627,7 @@ export function activate(context: vscode.ExtensionContext) {
 						// 获取皮肤英文名字
 						skinNameEnglish = matchArr[0].split('"')[3];
 						// 从皮肤英文名字从AttachWearables.txt中找到对应行
-						const addon_path = vscode.workspace.getConfiguration().get('LuaAbilityPlugin.addon_path');
+						const addon_path = vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path');
 						const AttachWearables = addon_path + '/game/dota_td/scripts/AttachWearables.txt';
 						vscode.workspace.openTextDocument(vscode.Uri.file(AttachWearables)).then(async function (document) {
 							for (let lineNumber = 1; lineNumber < document.lineCount; lineNumber++) {

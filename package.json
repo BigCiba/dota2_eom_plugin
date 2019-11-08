@@ -1,8 +1,9 @@
 {
-	"name": "lua-ability-editor-plugin",
-	"displayName": "lua-ability-editor-plugin",
-	"description": "Dota2 lua技能插件",
+	"name": "dota2_eom_plugin",
+	"displayName": "Dota2月之底插件",
+	"description": "Dota2月之底插件",
 	"version": "0.0.1",
+	"publisher": "bigciba",
 	"engines": {
 		"vscode": "^1.39.0"
 	},
@@ -11,7 +12,8 @@
 	],
 	"activationEvents": [
 		"*",
-		"onCommand:extension.SkinTool"
+		"onCommand:extension.SkinTool",
+		"onCommand:extension.OpenLang"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -47,22 +49,15 @@
 		},
 		"configuration": {
 			"type": "object",
-			"title": "Lua-Ability插件",
+			"title": "Dota2月之底插件",
 			"properties": {
-				"LuaAbilityPlugin.addon_path": {
+				"Dota2EomPlugin.addon_path": {
 					"type": "string",
-					"default": "C:/Users/lsj58/Documents/Dota Addon/ProjectDttD",
 					"description": "项目路径"
 				},
-				"LuaAbilityPlugin.items_schinese_url": {
+				"Dota2EomPlugin.text_url": {
 					"type": "string",
-					"default": "C:/Users/lsj58/Desktop/作图工具",
-					"description": "items_schinese.txt文件位置"
-				},
-				"LuaAbilityPlugin.items_english_url": {
-					"type": "string",
-					"default": "C:/Users/lsj58/Desktop/作图工具",
-					"description": "items_english.txt文件位置"
+					"description": "需求文本路径"
 				}
 			}
 		}
