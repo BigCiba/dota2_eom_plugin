@@ -27,8 +27,9 @@ function activate(context) {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         // vscode.window.showInformationMessage('Hello World!');
-        const path = 'C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
-        vscode.window.showTextDocument(vscode.Uri.file(path));
+        // const path = 'C:/Users/lsj58/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
+        // vscode.window.showTextDocument(vscode.Uri.file(path));
+        GenerateSkinKV();
         // vscode.workspace.fs.copy(vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_tower.xlsx'),vscode.Uri.file('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/自制工具及其源码/PythonOverride/npc_tower.xlsx'),{overwrite: true});
         // var uri = vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_info.json';
         // fsync:readFile(uri, 'utf-8', (err, data) => {
@@ -43,7 +44,57 @@ function activate(context) {
         // const sheetList = xlsx.parse('C:/Users/bigciba/Documents/Dota Addons/ProjectDttD/design/4.kv配置表/npc_heroes_tower_skin.xlsx');
         // console.log(sheetList);
         // console.log('结束');
-        // var document = vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.text_url') + '/items_game.txt'));
+        var document = vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/card_type.kv'));
+        document.then(function (document) {
+            var info = { key: new Array, value: new Array, depth: new Number };
+            var stateArr = new Array;
+            var state = { state: 'null', key: '', value: '', obj: {} }; // 1.搜索到"符号进入key值	2.结束key值	3.进入value	4.判断value是table还是value
+            stateArr.push(state);
+            for (let line = 0; line < 1; line++) {
+                const lineText = document.lineAt(line);
+                for (let character = 0; character < lineText.range.end.character; character++) {
+                    const text = lineText.text.substr(character, 1);
+                    // key
+                    if (text === '"' && stateArr[stateArr.length - 1].state === 'null') {
+                        stateArr[stateArr.length - 1].state = 'key';
+                        continue;
+                    }
+                    if (stateArr[stateArr.length - 1].state === 'key') {
+                        stateArr[stateArr.length - 1].key += text;
+                    }
+                    if (text === '"' && stateArr[stateArr.length - 1].state === 'key') {
+                        stateArr[stateArr.length - 1].state = 'value';
+                        continue;
+                    }
+                    // value
+                    if (text === '"' && stateArr[stateArr.length - 1].state === 'value') {
+                        stateArr[stateArr.length - 1].state = 'string';
+                        continue;
+                    }
+                    if (stateArr[stateArr.length - 1].state === 'string') {
+                        stateArr[stateArr.length - 1].value += text;
+                    }
+                    if (text === '"' && stateArr[stateArr.length - 1].state === 'string') {
+                        stateArr[stateArr.length - 1].state = 'null';
+                        testobj[stateArr[stateArr.length - 1].key] = stateArr[stateArr.length - 1].value;
+                        continue;
+                    }
+                    // table
+                    if (text === '{' && stateArr[stateArr.length - 1].state === 'value') {
+                        stateArr[stateArr.length - 1].state = 'table';
+                        continue;
+                    }
+                    if (stateArr[stateArr.length - 1].state === 'table') {
+                        stateArr.push({ state: 'null', key: '', value: '', obj: {} });
+                        continue;
+                    }
+                    if (text === '}' && stateArr[stateArr.length - 1].state === 'table') {
+                        stateArr[stateArr.length - 1].state = 'null';
+                        continue;
+                    }
+                }
+            }
+        });
         // for (let line = 20000; line < 20020; line++) {
         // 	var text = (await document).getText(new vscode.Range(new vscode.Position(line,0),new vscode.Position(line,100)));
         // 	console.log(text);
@@ -85,15 +136,9 @@ function activate(context) {
             }
         });
     }
-    function GetLineText(text, lineCount, line) {
-        var lineCountArr = text.match(/\n/g);
-        var lineCount = 0;
-        if (lineCountArr !== null) {
-            lineCount = lineCountArr.length;
-        }
-    }
+    // 获得Creature字符
     function GetSkinId(setData, defaultData) {
-        var Creature = '"AttachWearables" // ' + setData.chinese_name + '\n{\n\t';
+        var Creature = '\t\t\t"AttachWearables" // ' + setData.chinese_name + '\n\t\t\t{\n';
         for (let i = 0; i < defaultData.AttachWearables.length; i++) {
             const defaultElement = defaultData.AttachWearables[i];
             var ItemDef = defaultElement.ItemDef;
@@ -105,12 +150,13 @@ function activate(context) {
                     item_desc = element.item_desc;
                 }
             }
-            var lineText = new String('"' + defaultElement.ID + '" { "ItemDef" "' + ItemDef + '" } // ' + item_desc + '\n\t');
+            var lineText = new String('\t\t\t\t"' + defaultElement.ID + '" { "ItemDef" "' + ItemDef + '" } // ' + item_desc + '\n');
             Creature += lineText;
         }
-        Creature += '}';
+        Creature += '\t\t\t}';
         return Creature;
     }
+    // 根据套装英文名获取数据
     function FindSetDataWithEnglishName(english_name) {
         for (let i = 0; i < SetData.length; i++) {
             const element = SetData[i];
@@ -119,6 +165,7 @@ function activate(context) {
             }
         }
     }
+    // 获取英雄数据
     function FindHeroDataWithHeroName(heroname) {
         for (let i = 0; i < HeroData.length; i++) {
             const element = HeroData[i];
@@ -127,6 +174,7 @@ function activate(context) {
             }
         }
     }
+    // 获取英雄默认套装
     function FindHeroDefaultSet(heroname) {
         for (let i = 0; i < SetData.length; i++) {
             const set = SetData[i];
@@ -134,6 +182,103 @@ function activate(context) {
                 return set.data;
             }
         }
+    }
+    // 生成skin文件
+    function GenerateSkinKV() {
+        const skinExcelUri = vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx';
+        const heroKVUri = vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv');
+        const heroSkinKVUri = vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv';
+        // 打开excel
+        var sheetList = node_xlsx_1.default.parse(skinExcelUri);
+        var exceldata = sheetList[0].data;
+        var outputData = '"npc_heroes_tower_skin"\n{\n\t// 主键\n';
+        vscode.workspace.openTextDocument(heroKVUri).then(function (document) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (let j = 2; j < exceldata.length; j++) {
+                    const element = exceldata[j];
+                    for (let line = 0; line < document.lineCount; line++) {
+                        var lineText = document.lineAt(line).text;
+                        // 当找到英雄名字开始行
+                        if (lineText.search(element[6]) !== -1) {
+                            outputData += '\t"' + element[0] + '"\n';
+                            var AttachWearables = false;
+                            var leftBrackets = 0;
+                            var rightBrackets = 0;
+                            for (let index = line + 1; index < document.lineCount; index++) {
+                                var text = document.lineAt(index).text;
+                                if (element[1] !== undefined && text.search('"Model"') !== -1) {
+                                    outputData += text.replace(text.split('"')[3], element[1]) + '\n';
+                                    continue;
+                                }
+                                if (element[2] !== undefined && text.search('"ModelScale"') !== -1) {
+                                    outputData += text.replace(text.split('"')[3], element[2]) + '\n';
+                                    continue;
+                                }
+                                if (element[4] !== undefined && text.search('"HealthBarOffset"') !== -1) {
+                                    outputData += text.replace(text.split('"')[3], element[4]) + '\n';
+                                    continue;
+                                }
+                                if (element[5] !== undefined && text.search('"ProjectileModel"') !== -1) {
+                                    outputData += text.replace(text.split('"')[3], element[5]) + '\n';
+                                    continue;
+                                }
+                                if (text.search('"GhostModelUnitName"') !== -1) {
+                                    outputData += text + '\n';
+                                    if (element[3] !== undefined) {
+                                        outputData += '\t\t// 皮肤\n\t\t"Skin"\t"' + element[3] + '"\n';
+                                    }
+                                    outputData += '\t\t// 继承属性单位\n\t\t"OverrideUnitName"\t"' + element[6] + '"\n';
+                                    continue;
+                                }
+                                if (element[8] !== undefined && text.search('"AttachWearables"') !== -1) {
+                                    outputData += element[8] + '\n';
+                                    AttachWearables = true;
+                                    continue;
+                                }
+                                if (text.search(/npc_dota_hero_.*_custom/) !== -1) {
+                                    break;
+                                }
+                                if (AttachWearables === false) {
+                                    outputData += text + '\n';
+                                }
+                                else {
+                                    var leftBracketsArr = text.match('{');
+                                    if (leftBracketsArr !== null) {
+                                        leftBrackets += leftBracketsArr.length;
+                                    }
+                                    var rightBracketsArr = text.match('}');
+                                    if (rightBracketsArr !== null) {
+                                        rightBrackets += rightBracketsArr.length;
+                                    }
+                                    if (leftBrackets !== 0 && leftBrackets === rightBrackets) {
+                                        AttachWearables = false;
+                                        leftBrackets = 0;
+                                        rightBrackets = 0;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                outputData += '}';
+                fs.writeFileSync(heroSkinKVUri, outputData);
+                vscode.window.setStatusBarMessage('生成完毕..');
+            });
+        });
+        // kv文件格式每一行判断，//为注释
+        // vscode.workspace.openTextDocument(heroKVUri).then(function(document){
+        // 	for (let index = 3; index < exceldata.length; index++) {
+        // 		const element = exceldata[index];
+        // 	}
+        // 	for (let line = 0; line < document.lineCount; line++) {
+        // 		var lineText = document.lineAt(line).text;
+        // 		// 遇到注释
+        // 		if (lineText.search('//') !== -1) {
+        // 			continue;
+        // 		}
+        // 	}
+        // });
     }
     function SkinToolInit() {
         if (vscode.workspace.getConfiguration().has('Dota2EomPlugin.text_url') && vscode.workspace.getConfiguration().has('Dota2EomPlugin.addon_path')) {
@@ -144,6 +289,11 @@ function activate(context) {
                 }
                 SetData = JSON.parse(data);
                 ReadHeroData();
+                // 监听npc_heroes_tower_skin.xlsx变化事件
+                var fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/design/4.kv配置表/npc_heroes_tower_skin.xlsx', true, false, true);
+                fileSystemWatcher.onDidChange(function (uri) {
+                    GenerateSkinKV();
+                });
             });
         }
     }
@@ -461,41 +611,66 @@ function activate(context) {
                 const SetName = setData.chinese_name;
                 var newData = [SkinName, Model, ModelScale, Skin, HealthBarOffset, ProjectileModel, OverrideUnitName, Name, Creature, null, SetName];
                 exceldata.push(newData);
-                var buffer = node_xlsx_1.default.build([{ name: "Sheet1", data: exceldata }]);
+                const options = { '!cols': [{ wch: 40 }, { wch: 50 }, { wch: 10 }, { wch: 6 }, { wch: 20 }, { wch: 20 }, { wch: 40 }, { wch: 12 }, { wch: 40 }, { wch: 6 }, { wch: 30 }] };
+                var buffer = node_xlsx_1.default.build([{ name: "Sheet1", data: exceldata }], options);
                 fs.writeFileSync(xlsxName, buffer);
-                vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower.kv'), { overwrite: true });
-                vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design//自制工具及其源码/PythonOverride/npc_heroes_tower_skin.xlsx'), { overwrite: true });
-                vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/kv.exe'));
-                quickPick.hide();
-                // 覆盖kv
-                vscode.window.showInformationMessage('Hello World!', '覆盖').then((msg) => {
-                    vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower_skin.kv'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv'), { overwrite: true });
-                    vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv')).then(function (document) {
-                        return __awaiter(this, void 0, void 0, function* () {
-                            var avatarStarLine = 0;
-                            var avatarEndLine = 0;
-                            for (let line = 0; line < document.lineCount; line++) {
-                                var lineText = document.lineAt(line).text;
-                                if (lineText.search(setData.heroname + '_skin_' + '0' + heroData.skins.length) !== -1) {
-                                    avatarEndLine = line + 1;
-                                    break;
-                                }
-                                if (lineText.search('avatar') !== -1 && avatarStarLine === 0) {
-                                    avatarStarLine = line;
-                                    continue;
-                                }
-                                if (lineText.search('avatar') === -1 && avatarStarLine !== 0) {
-                                    avatarEndLine = line;
-                                    break;
-                                }
+                // vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower.kv'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower.kv'),{overwrite: true});
+                // vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/4.kv配置表/npc_heroes_tower_skin.xlsx'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design//自制工具及其源码/PythonOverride/npc_heroes_tower_skin.xlsx'),{overwrite: true});
+                // vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/kv.exe'));
+                // 写入商品配置表
+                vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv')).then(function (document) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        var avatarStarLine = 0;
+                        var avatarEndLine = 0;
+                        for (let line = 0; line < document.lineCount; line++) {
+                            var lineText = document.lineAt(line).text;
+                            if (lineText.search(setData.heroname + '_skin_' + '0' + heroData.skins.length) !== -1) {
+                                avatarEndLine = line + 1;
+                                break;
                             }
-                            var textEditor = vscode.window.showTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv'));
-                            (yield textEditor).edit(function (editBuilder) {
-                                editBuilder.insert(new vscode.Position(avatarEndLine, 0), SkinName + ',avatar,' + SetName + ',,,1,TRUE,,,\n');
-                            });
+                            if (lineText.search('avatar') !== -1 && avatarStarLine === 0) {
+                                avatarStarLine = line;
+                                continue;
+                            }
+                            if (lineText.search('avatar') === -1 && avatarStarLine !== 0) {
+                                avatarEndLine = line;
+                                break;
+                            }
+                        }
+                        var textEditor = vscode.window.showTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv'));
+                        (yield textEditor).edit(function (editBuilder) {
+                            editBuilder.insert(new vscode.Position(avatarEndLine, 0), SkinName + ',avatar,' + SetName + ',,,1,TRUE,,,\n');
                         });
                     });
                 });
+                quickPick.hide();
+                // 覆盖kv
+                /*vscode.window.showInformationMessage('Hello World!','覆盖').then((msg)=>{
+                    vscode.workspace.fs.copy(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/自制工具及其源码/PythonOverride/npc_heroes_tower_skin.kv'), vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/npc_heroes_tower_skin.kv'),{overwrite: true});
+                    vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv')).then(async function(document){
+                        var avatarStarLine = 0;
+                        var avatarEndLine = 0;
+                        for (let line = 0; line < document.lineCount; line++) {
+                            var lineText = document.lineAt(line).text;
+                            if (lineText.search(setData.heroname + '_skin_' + '0' + heroData.skins.length) !== -1) {
+                                avatarEndLine = line + 1;
+                                break;
+                            }
+                            if (lineText.search('avatar') !== -1 && avatarStarLine === 0) {
+                                avatarStarLine = line;
+                                continue;
+                            }
+                            if (lineText.search('avatar') === -1 && avatarStarLine !== 0) {
+                                avatarEndLine = line;
+                                break;
+                            }
+                        }
+                        var textEditor = vscode.window.showTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/design/6.商业化设计/1.商品配置表/items.csv'));
+                        (await textEditor).edit(function (editBuilder) {
+                            editBuilder.insert(new vscode.Position(avatarEndLine,0), SkinName + ',avatar,' + SetName + ',,,1,TRUE,,,\n');
+                        });
+                    });
+                });*/
             });
         }
         /*const quickPick = vscode.window.createQuickPick();
