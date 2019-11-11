@@ -26,7 +26,7 @@ function activate(context) {
     let OpenLang = vscode.commands.registerCommand('extension.OpenLang', () => __awaiter(this, void 0, void 0, function* () {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
-        // vscode.window.showInformationMessage('Hello World!');
+        vscode.window.showInformationMessage('Hello World!');
         // const path = 'C:/Users/lsj58/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
         // vscode.window.showTextDocument(vscode.Uri.file(path));
         GenerateSkinKV();
@@ -570,6 +570,7 @@ function activate(context) {
     // 	SetData.forEach(element => {
     // 	});
     // }
+    vscode.window.showInformationMessage('SkinTool');
     let SkinTool = vscode.commands.registerCommand('extension.SkinTool', () => {
         if (SetData.length > 0) {
             const quickPick = vscode.window.createQuickPick();

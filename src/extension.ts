@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 
 		// Display a message box to the user
-		// vscode.window.showInformationMessage('Hello World!');
+		vscode.window.showInformationMessage('Hello World!');
 		// const path = 'C:/Users/lsj58/Documents/Dota Addons/ProjectDttD/game/dota_td/resource/addon_schinese.txt';
 		// vscode.window.showTextDocument(vscode.Uri.file(path));
 		GenerateSkinKV();
@@ -575,6 +575,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	});
 	// }
 
+	vscode.window.showInformationMessage('SkinTool');
 
 	let SkinTool = vscode.commands.registerCommand('extension.SkinTool', () => {
 		if (SetData.length > 0) {
