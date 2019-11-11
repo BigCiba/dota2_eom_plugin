@@ -2,7 +2,7 @@
 	"name": "dota2-eom-plugin",
 	"displayName": "Dota2月之底插件",
 	"description": "Dota2月之底插件",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"publisher": "bigciba",
 	"icon": "images/logo.png",
 	"engines": {
