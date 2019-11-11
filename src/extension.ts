@@ -43,57 +43,57 @@ export function activate(context: vscode.ExtensionContext) {
 		
 		
 		// console.log('结束');
-		var document = vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/card_type.kv'));
-		document.then(function (document) {
-			var info = {key:new Array,value:new Array,depth:new Number};
-			var stateArr = new Array;
-			var state = {state:'null',key:'',value:'',obj:{}};	// 1.搜索到"符号进入key值	2.结束key值	3.进入value	4.判断value是table还是value
-			stateArr.push(state);
-			for (let line = 0; line < 1; line++) {
-				const lineText = document.lineAt(line);
-				for (let character = 0; character < lineText.range.end.character; character++) {
-					const text = lineText.text.substr(character,1);
-					// key
-					if (text === '"' && stateArr[stateArr.length-1].state === 'null') {
-						stateArr[stateArr.length-1].state = 'key';
-						continue;
-					}
-					if (stateArr[stateArr.length-1].state === 'key') {
-						stateArr[stateArr.length-1].key += text;
-					}
-					if (text === '"' && stateArr[stateArr.length-1].state === 'key') {
-						stateArr[stateArr.length-1].state = 'value';
-						continue;
-					}
-					// value
-					if (text === '"' && stateArr[stateArr.length-1].state === 'value') {
-						stateArr[stateArr.length-1].state = 'string';
-						continue;
-					}
-					if (stateArr[stateArr.length-1].state === 'string') {
-						stateArr[stateArr.length-1].value += text;
-					}
-					if (text === '"' && stateArr[stateArr.length-1].state === 'string') {
-						stateArr[stateArr.length-1].state = 'null';
-						testobj[stateArr[stateArr.length-1].key] = stateArr[stateArr.length-1].value;
-						continue;
-					}
-					// table
-					if (text === '{' && stateArr[stateArr.length-1].state === 'value') {
-						stateArr[stateArr.length-1].state = 'table';
-						continue;
-					}
-					if (stateArr[stateArr.length-1].state === 'table') {
-						stateArr.push({state:'null',key:'',value:'',obj:{}});
-						continue;
-					}
-					if (text === '}' && stateArr[stateArr.length-1].state === 'table') {
-						stateArr[stateArr.length-1].state = 'null';
-						continue;
-					}
-				}
-			}
-		});
+		// var document = vscode.workspace.openTextDocument(vscode.Uri.file(vscode.workspace.getConfiguration().get('Dota2EomPlugin.addon_path') + '/game/dota_td/scripts/npc/kv/card_type.kv'));
+		// document.then(function (document) {
+		// 	var info = {key:new Array,value:new Array,depth:new Number};
+		// 	var stateArr = new Array;
+		// 	var state = {state:'null',key:'',value:'',obj:{}};	// 1.搜索到"符号进入key值	2.结束key值	3.进入value	4.判断value是table还是value
+		// 	stateArr.push(state);
+		// 	for (let line = 0; line < 1; line++) {
+		// 		const lineText = document.lineAt(line);
+		// 		for (let character = 0; character < lineText.range.end.character; character++) {
+		// 			const text = lineText.text.substr(character,1);
+		// 			// key
+		// 			if (text === '"' && stateArr[stateArr.length-1].state === 'null') {
+		// 				stateArr[stateArr.length-1].state = 'key';
+		// 				continue;
+		// 			}
+		// 			if (stateArr[stateArr.length-1].state === 'key') {
+		// 				stateArr[stateArr.length-1].key += text;
+		// 			}
+		// 			if (text === '"' && stateArr[stateArr.length-1].state === 'key') {
+		// 				stateArr[stateArr.length-1].state = 'value';
+		// 				continue;
+		// 			}
+		// 			// value
+		// 			if (text === '"' && stateArr[stateArr.length-1].state === 'value') {
+		// 				stateArr[stateArr.length-1].state = 'string';
+		// 				continue;
+		// 			}
+		// 			if (stateArr[stateArr.length-1].state === 'string') {
+		// 				stateArr[stateArr.length-1].value += text;
+		// 			}
+		// 			if (text === '"' && stateArr[stateArr.length-1].state === 'string') {
+		// 				stateArr[stateArr.length-1].state = 'null';
+		// 				testobj[stateArr[stateArr.length-1].key] = stateArr[stateArr.length-1].value;
+		// 				continue;
+		// 			}
+		// 			// table
+		// 			if (text === '{' && stateArr[stateArr.length-1].state === 'value') {
+		// 				stateArr[stateArr.length-1].state = 'table';
+		// 				continue;
+		// 			}
+		// 			if (stateArr[stateArr.length-1].state === 'table') {
+		// 				stateArr.push({state:'null',key:'',value:'',obj:{}});
+		// 				continue;
+		// 			}
+		// 			if (text === '}' && stateArr[stateArr.length-1].state === 'table') {
+		// 				stateArr[stateArr.length-1].state = 'null';
+		// 				continue;
+		// 			}
+		// 		}
+		// 	}
+		// });
 		// for (let line = 20000; line < 20020; line++) {
 		// 	var text = (await document).getText(new vscode.Range(new vscode.Position(line,0),new vscode.Position(line,100)));
 		// 	console.log(text);
@@ -203,6 +203,8 @@ export function activate(context: vscode.ExtensionContext) {
 				for (let line = 0; line < document.lineCount; line++) {
 					var lineText = document.lineAt(line).text;
 					// 当找到英雄名字开始行
+					var heroLeft = 0;
+					var heroRight = 0;
 					if (lineText.search(element[6]) !== -1) {
 						outputData += '\t"' + element[0] + '"\n';
 						var AttachWearables = false;
@@ -210,6 +212,20 @@ export function activate(context: vscode.ExtensionContext) {
 						var rightBrackets = 0;
 						for (let index = line + 1; index < document.lineCount; index++) {
 							var text = document.lineAt(index).text;
+							var heroLeftArr = text.match('{');
+							if (heroLeftArr !== null) {
+								heroLeft += heroLeftArr.length;
+							}
+							var heroRightArr = text.match('}');
+							if (heroRightArr !== null) {
+								heroRight += heroRightArr.length;
+							}
+							if (heroLeft !== 0 && heroLeft === heroRight) {
+								heroLeft = 0;
+								heroRight = 0;
+								outputData += '\t}\n';
+								break;
+							}
 							if (element[1] !== undefined && text.search('"Model"') !== -1) {
 								outputData += text.replace(text.split('"')[3], element[1]) + '\n';
 								continue;
@@ -239,9 +255,6 @@ export function activate(context: vscode.ExtensionContext) {
 								AttachWearables = true;
 								continue;
 							}
-							if (text.search(/npc_dota_hero_.*_custom/) !== -1) {
-								break;
-							}
 							if (AttachWearables === false) {
 								outputData += text + '\n';
 							} else {
@@ -261,6 +274,8 @@ export function activate(context: vscode.ExtensionContext) {
 							}
 						}
 						break;
+					} else {
+						// outputData += lineText;
 					}
 				}
 			}
@@ -268,20 +283,6 @@ export function activate(context: vscode.ExtensionContext) {
 			fs.writeFileSync(heroSkinKVUri,outputData);
 			vscode.window.setStatusBarMessage('生成完毕..');
 		});
-		// kv文件格式每一行判断，//为注释
-		// vscode.workspace.openTextDocument(heroKVUri).then(function(document){
-		// 	for (let index = 3; index < exceldata.length; index++) {
-		// 		const element = exceldata[index];
-				
-		// 	}
-		// 	for (let line = 0; line < document.lineCount; line++) {
-		// 		var lineText = document.lineAt(line).text;
-		// 		// 遇到注释
-		// 		if (lineText.search('//') !== -1) {
-		// 			continue;
-		// 		}
-		// 	}
-		// });
 	}
 	function SkinToolInit() {
 		if (vscode.workspace.getConfiguration().has('Dota2EomPlugin.text_url') && vscode.workspace.getConfiguration().has('Dota2EomPlugin.addon_path')) {

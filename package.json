@@ -21,11 +21,11 @@
 		"commands": [
 			{
 				"command": "extension.OpenLang",
-				"title": "转到文本"
+				"title": "生成皮肤kv"
 			},
 			{
 				"command": "extension.SkinTool",
-				"title": "皮肤生成工具",
+				"title": "生成皮肤kv",
 				"icon": {
 					"light": "./images/skin_tool_light.svg",
 					"dark": "./images/skin_tool_dark.svg"
