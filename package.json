@@ -83,7 +83,7 @@
 		"vscode-test": "^1.2.0"
 	},
 	"dependencies": {
-		"node-xlsx": "0.15.0"
+		"node-xlsx": "^0.12.1"
 	},
 	"repository": {
 		"type": "git",
