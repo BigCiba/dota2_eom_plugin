@@ -1,7 +1,7 @@
 {
 	"name": "dota2-eom-plugin",
-	"displayName": "Dota2月之底插件",
-	"description": "Dota2月之底插件",
+	"displayName": "Dota2轮回谷插件",
+	"description": "Dota2轮回谷插件",
 	"version": "1.0.5",
 	"publisher": "bigciba",
 	"icon": "images/logo.png",
@@ -13,16 +13,11 @@
 	],
 	"activationEvents": [
 		"*",
-		"onCommand:extension.SkinTool",
-		"onCommand:extension.OpenLang"
+		"onCommand:extension.SkinTool"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
-			{
-				"command": "extension.OpenLang",
-				"title": "生成皮肤kv"
-			},
 			{
 				"command": "extension.SkinTool",
 				"title": "生成皮肤kv",
@@ -33,14 +28,6 @@
 			}
 		],
 		"menus": {
-			"editor/context": [
-				{
-					"when": "editorFocus",
-					"command": "extension.OpenLang",
-					"title": "转到文本",
-					"group": "navigation"
-				}
-			],
 			"editor/title": [
 				{
 					"command": "extension.SkinTool",
@@ -50,11 +37,11 @@
 		},
 		"configuration": {
 			"type": "object",
-			"title": "Dota2月之底插件",
+			"title": "Dota2轮回谷插件",
 			"properties": {
 				"Dota2EomPlugin.addon_path": {
 					"type": "string",
-					"description": "项目路径"
+					"description": "轮回谷项目路径"
 				},
 				"Dota2EomPlugin.text_url": {
 					"type": "string",
